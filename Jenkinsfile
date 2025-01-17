@@ -24,9 +24,8 @@ pipeline {
                     echo scm.branches[0].name	
                     if (scm.branches[0].name == "main"){
                         sh '''#!/bin/bash
-                        
                         sudo su
-                        echo "hello world"
+                        sudo rsync --progress -r -e "ssh -i /home/ubuntu/jenkins-server-keys/serverkey.pem" /var/lib/jenkins/workspace/php_api_main/src/PHP_Files* ubuntu@54.210.74.51:/var/www/html/backend/PHP_Files
                         '''   
                     }
                 
