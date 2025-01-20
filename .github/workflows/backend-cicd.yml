@@ -32,6 +32,6 @@ jobs:
         run: |
           echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
           chmod 600 /tmp/serverkey.pem
-          rsync --progress -r -e "ssh -v -i /tmp/serverkey.pem" \
+          rsync --progress -r -e "ssh -v -o StrictHostKeyChecking=no -i /tmp/serverkey.pem" \
           ./src/PHP_Files/* \
           ubuntu@54.226.133.180:/var/www/html/backend/PHP_Files
