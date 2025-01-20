@@ -16,8 +16,8 @@ jobs:
       - name: Get Commit Details
         id: commit_details
         run: |
-          echo "Commit Message: $(git log -1 --pretty=%B)" >> $GITHUB_ENV
-          echo "Author Email: $(git log -1 --pretty=%ce)" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          echo "AUTHOR_EMAIL=$(git log -1 --pretty=%ce)" >> $GITHUB_ENV
         shell: bash
 
       - name: Print Commit Details
@@ -34,4 +34,4 @@ jobs:
           chmod 600 /tmp/serverkey.pem
           rsync --progress -r -e "ssh -i /tmp/serverkey.pem" \
           ./src/PHP_Files/* \
-          ubuntu@54.226.133.180:/var/www/html/backend/PHP_Files
+          ubuntu@54.210.74.51:/var/www/html/backend/PHP_Files
