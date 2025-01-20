@@ -30,8 +30,8 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your private key in repository secrets
         run: |
-          echo "${SSH_PRIVATE_KEY}" > /tmp/new_server_key.pem
-          chmod 600 /tmp/new_server_key.pem
-          rsync --progress -r -e "ssh -v -i /tmp/new_server_key.pem" \
+          echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
+          chmod 600 /tmp/serverkey.pem
+          rsync --progress -r -e "ssh -v -i /tmp/serverkey.pem" \
           ./src/PHP_Files/* \
           ubuntu@54.226.133.180:/var/www/html/backend/PHP_Files
