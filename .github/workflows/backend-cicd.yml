@@ -1,0 +1,37 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow only on pushes to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Get Commit Details
+        id: commit_details
+        run: |
+          echo "Commit Message: $(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          echo "Author Email: $(git log -1 --pretty=%ce)" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Print Commit Details
+        run: |
+          echo "Commit Message: ${{ env.COMMIT_MESSAGE }}"
+          echo "Author Email: ${{ env.AUTHOR_EMAIL }}"
+
+      - name: Deploy to Application Server
+        if: github.ref == 'refs/heads/main'  # Ensure this step runs only on the main branch
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your private key in repository secrets
+        run: |
+          echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
+          chmod 600 /tmp/serverkey.pem
+          rsync --progress -r -e "ssh -i /tmp/serverkey.pem" \
+          ./src/PHP_Files/* \
+          ubuntu@54.226.133.180:/var/www/html/backend/PHP_Files
