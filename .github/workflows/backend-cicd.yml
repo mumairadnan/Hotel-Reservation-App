@@ -35,16 +35,16 @@ jobs:
             ${{ runner.os }}-gradle
 
       - name: Make Gradle Wrapper Executable
-        run: chmod +x ./src/gradlew
+        run: chmod +x ./src/gradlew  # Adjusted path to gradlew inside src folder
 
       - name: Run Android Lint
-        run: ./src/gradlew lint
+        run: ./src/gradlew :app:lint  # Adjusted to include :app:lint for the specific app module
 
       - name: Upload Lint Results as Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: lint-report
-          path: build/reports/lint-results.html
+          path: ./src/app/build/reports/lint-results.html  # Path to lint results inside the app module
 
       - name: Deploy to Application Server
         if: github.ref == 'refs/heads/main'
