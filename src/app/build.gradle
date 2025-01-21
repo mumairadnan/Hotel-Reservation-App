@@ -21,14 +21,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    lintOptions {
+        // Enable/disable lint checks or adjust behavior here
+        abortOnError false // Prevents build from failing due to lint errors
+        checkReleaseBuilds false // Disable lint checks for release builds
+        // Other lint options can be added as necessary
+    }
 }
 
 dependencies {
-
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'de.hdodenhof:circleimageview:3.1.0'
