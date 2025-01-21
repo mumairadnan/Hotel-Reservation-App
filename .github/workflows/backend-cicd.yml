@@ -15,11 +15,11 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Set up JDK
-      - name: Set up JDK (Java 17)
+      - name: Set up JDK (Java 8)
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '8'
 
       # Step 3: Verify Java version
       - name: Verify Java Version
