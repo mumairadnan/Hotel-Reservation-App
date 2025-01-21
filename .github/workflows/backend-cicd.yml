@@ -38,7 +38,7 @@ jobs:
         run: chmod +x ./src/gradlew  # Adjusted path to gradlew inside src folder
 
       - name: Run Android Lint
-        run: ./gradlew --project-dir src/app lint  # Adjusted to include :app:lint for the specific app module
+        run: ./src/gradlew --project-dir ./src/app lint  # Adjusted to include :app:lint for the specific app module
 
       - name: Upload Lint Results as Artifacts
         uses: actions/upload-artifact@v3
