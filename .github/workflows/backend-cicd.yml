@@ -35,10 +35,10 @@ jobs:
             ${{ runner.os }}-gradle
 
       - name: Make Gradle Wrapper Executable
-        run: chmod +x ./gradlew
+        run: chmod +x ./src/gradlew
 
       - name: Run Android Lint
-        run: ./gradlew lint
+        run: ./src/gradlew lint
 
       - name: Upload Lint Results as Artifacts
         uses: actions/upload-artifact@v3
