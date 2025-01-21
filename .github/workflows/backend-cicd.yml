@@ -13,11 +13,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up JDK (Java 17)
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '17'  # Use Java 17
+          java-version: '11'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
@@ -34,17 +34,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle
 
-      - name: Make Gradle Wrapper Executable
-        run: chmod +x ./src/gradlew  # Adjusted path to gradlew inside src folder
-
       - name: Run Android Lint
-        run: ./src/gradlew :app:lint  # Adjusted to include :app:lint for the specific app module
+        run: ./src/gradlew :app:lint  # Lint for the app module inside src
 
       - name: Upload Lint Results as Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: lint-report
-          path: ./src/app/build/reports/lint-results.html  # Path to lint results inside the app module
+          path: src/app/build/reports/lint-results.html  # Correct path for lint results
 
       - name: Deploy to Application Server
         if: github.ref == 'refs/heads/main'
