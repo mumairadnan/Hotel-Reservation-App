@@ -13,74 +13,25 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Set up Java 17 for Android SDK
-      - name: Set up JDK for Android SDK (Java 17)
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+      - name: Get Commit Details
+        id: commit_details
+        run: |
+          echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          echo "AUTHOR_EMAIL=$(git log -1 --pretty=%ce)" >> $GITHUB_ENV
+        shell: bash
 
-      # Set up Android SDK
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 33
-          target: android-33
-          build-tools: 33.0.2
+      - name: Print Commit Details
+        run: |
+          echo "Commit Message: ${{ env.COMMIT_MESSAGE }}"
+          echo "Author Email: ${{ env.AUTHOR_EMAIL }}"
 
-      
-      # Step 3: Verify Java version
-      - name: Verify Java Version
-        run: java -version
-
-      
-      # Step 5: Cache Gradle files
-      - name: Cache Gradle Files
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle
-
-      # Step 6: Cache Android SDK (optional for faster builds)
-      - name: Cache Android SDK
-        uses: actions/cache@v3
-        with:
-          path: ~/.android
-          key: ${{ runner.os }}-android-sdk
-
-      # Step 7: Make Gradle Wrapper Executable
-      - name: Make Gradle Wrapper Executable
-        run: chmod +x ./src/gradlew
-
-      # Step 8: Verify Gradle version
-      - name: Verify Gradle Version
-        run: ./src/gradlew --version
-
-      # Step 9: Run Android Lint
-      - name: Run Android Lint
-        run: ./src/gradlew --project-dir ./src/app lint
-
-      # Step 10: Upload Lint Results
-      - name: Upload Lint Results as Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: lint-report
-          path: ./src/app/build/reports/lint-results.html  # Path to lint results
-
-      # Step 11: Deploy to Application Server
       - name: Deploy to Application Server
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'  # Ensure this step runs only on the main branch
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your private key in repository secrets
         run: |
           echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
           chmod 600 /tmp/serverkey.pem
-          echo "Deploying PHP files to the application server..."
-          rsync --progress -r -e "ssh -o StrictHostKeyChecking=no -i /tmp/serverkey.pem" \
+          rsync --progress -r -e "ssh -v -o StrictHostKeyChecking=no -i /tmp/serverkey.pem" \
           ./src/PHP_Files/* \
-          ubuntu@107.20.40.0:/var/www/html/backend/PHP_Files
-          echo "Deployment completed."
+          ubuntu@44.212.32.89:/var/www/html/backend/PHP_Files
