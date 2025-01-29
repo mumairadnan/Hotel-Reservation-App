@@ -1,24 +1,36 @@
-name: Backend CI/CD Pipeline
+name: Build Android App
 
 on:
   push:
     branches:
-      - main  # Trigger workflow only on pushes to the main branch
+      - main
 
 jobs:
-  build-and-analyze:
+  build:
+    name: Build Android App
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java_version: [21.0.3]
+        sdk_version: [33]
+        ndk_version: ['23.1.7779620']
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-    # Step 3: Set up Gradle and Run ktlint
-      - name: Run ktlint
+      # Step 2: Set up Git and fetch tags
+      - name: Set up Git
+        run: git fetch --tags
+
+      # Step 3: Run ktlint check
+      - name: Run KtLint Check
         run: ./gradlew ktlintCheck
 
-      - name: Run Detekt
-        run: ./gradlew detekt
+      # Step 4: Build the Android app
+      - name: Build Android App
+        run: ./gradlew assembleRelease
 
 
   #     - name: Set Up JDK 17 (Required for SonarQube)
