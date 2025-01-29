@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.github.shyiko.ktlint' version '0.46.0'
 }
 
 android {
@@ -59,16 +60,8 @@ ktlint {
     }
 }
 
-detekt {
-    buildUponDefaultConfig = true // default Detekt configuration
-    
-    reports {
-        html.enabled = true  // HTML report
-        xml.enabled = true   // XML report
-        txt.enabled = false  // Disable plain text report
-    }
-    
-    // Optional: Enable Android-specific rules
-    android = true
-    ignoreFailures = true // Continue the build even if Detekt finds issues
+task ktlintCheck {
+    group = "verification"
+    description = "Check Kotlin code style with ktlint"
+    dependsOn "ktlintFormat"
 }
