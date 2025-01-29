@@ -45,9 +45,9 @@ jobs:
           chmod 600 /tmp/serverkey.pem
 
           ssh -o StrictHostKeyChecking=no -i /tmp/serverkey.pem ubuntu@18.212.165.56 << 'EOF'
-            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip
-            unzip sonar-scanner-cli.zip
-            sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+            wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.6.1.59531.zip
+            unzip -q sonarqube-9.6.1.59531.zip
+            sudo mv sonarqube-9.6.1.59531 /opt/sonarqube
             export PATH=$PATH:/opt/sonar-scanner/bin
             
             sonar-scanner \
