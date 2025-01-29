@@ -13,65 +13,73 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up JDK 17 (Required for SonarQube)
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+    # Step 3: Set up Gradle and Run ktlint
+      - name: Run ktlint
+        run: ./gradlew ktlintCheck
 
-      - name: Get Commit Details
-        id: commit_details
-        run: |
-          echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-          echo "AUTHOR_EMAIL=$(git log -1 --pretty=%ce)" >> $GITHUB_ENV
-        shell: bash
+      - name: Run Detekt
+        run: ./gradlew detekt
 
-      - name: Print Commit Details
-        run: |
-          echo "Commit Message: ${{ env.COMMIT_MESSAGE }}"
-          echo "Author Email: ${{ env.AUTHOR_EMAIL }}"
 
-  run-sonar-scanner:
-    runs-on: ubuntu-latest
-    needs: build-and-analyze  # Ensure this runs after build-and-analyze
-    env:
-      SONAR_HOST_URL: "http://18.212.165.56:9000/"  # Your SonarQube server
-      SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}  # Add in GitHub Secrets
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your EC2 SSH key in Secrets
-    steps:
-      - name: Run Sonar Scanner on EC2
-        run: |
-          echo "$SSH_PRIVATE_KEY" > /tmp/serverkey.pem
-          chmod 600 /tmp/serverkey.pem
+  #     - name: Set Up JDK 17 (Required for SonarQube)
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '17'
 
-          ssh -o StrictHostKeyChecking=no -i /tmp/serverkey.pem ubuntu@18.212.165.56 << 'EOF'
-            wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.6.1.59531.zip
-            unzip -q sonarqube-9.6.1.59531.zip
-            sudo mv sonarqube-9.6.1.59531 /opt/sonarqube
-            export PATH=$PATH:/opt/sonar-scanner/bin
+  #     - name: Get Commit Details
+  #       id: commit_details
+  #       run: |
+  #         echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+  #         echo "AUTHOR_EMAIL=$(git log -1 --pretty=%ce)" >> $GITHUB_ENV
+  #       shell: bash
+
+  #     - name: Print Commit Details
+  #       run: |
+  #         echo "Commit Message: ${{ env.COMMIT_MESSAGE }}"
+  #         echo "Author Email: ${{ env.AUTHOR_EMAIL }}"
+
+  # run-sonar-scanner:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-analyze  # Ensure this runs after build-and-analyze
+  #   env:
+  #     SONAR_HOST_URL: "http://18.212.165.56:9000/"  # Your SonarQube server
+  #     SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}  # Add in GitHub Secrets
+  #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your EC2 SSH key in Secrets
+  #   steps:
+  #     - name: Run Sonar Scanner on EC2
+  #       run: |
+  #         echo "$SSH_PRIVATE_KEY" > /tmp/serverkey.pem
+  #         chmod 600 /tmp/serverkey.pem
+
+  #         ssh -o StrictHostKeyChecking=no -i /tmp/serverkey.pem ubuntu@18.212.165.56 << 'EOF'
+  #           wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.6.1.59531.zip
+  #           unzip -q sonarqube-9.6.1.59531.zip
+  #           sudo mv sonarqube-9.6.1.59531 /opt/sonarqube
+  #           export PATH=$PATH:/opt/sonar-scanner/bin
             
-            sonar-scanner \
-              -Dsonar.projectKey=Hotel-Reservation-App \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=$SONAR_HOST_URL \
-              -Dsonar.login=$SONAR_TOKEN \
-              -Dsonar.php.coverage.reportPaths=coverage.xml
-          EOF
+  #           sonar-scanner \
+  #             -Dsonar.projectKey=Hotel-Reservation-App \
+  #             -Dsonar.sources=. \
+  #             -Dsonar.host.url=$SONAR_HOST_URL \
+  #             -Dsonar.login=$SONAR_TOKEN \
+  #             -Dsonar.php.coverage.reportPaths=coverage.xml
+  #         EOF
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: run-sonar-scanner  # Ensure this runs after SonarQube analysis
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: run-sonar-scanner  # Ensure this runs after SonarQube analysis
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
 
-      - name: Deploy to Application Server
-        if: github.ref == 'refs/heads/main'
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
-          chmod 600 /tmp/serverkey.pem
-          rsync --progress -r -e "ssh -v -o StrictHostKeyChecking=no -i /tmp/serverkey.pem" \
-          ./src/PHP_Files/* \
-          ubuntu@34.238.232.63:/var/www/html/backend/PHP_Files
+  #     - name: Deploy to Application Server
+  #       if: github.ref == 'refs/heads/main'
+  #       env:
+  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  #       run: |
+  #         echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
+  #         chmod 600 /tmp/serverkey.pem
+  #         rsync --progress -r -e "ssh -v -o StrictHostKeyChecking=no -i /tmp/serverkey.pem" \
+  #         ./src/PHP_Files/* \
+  #         ubuntu@34.238.232.63:/var/www/html/backend/PHP_Files
