@@ -48,3 +48,27 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
+
+ktlint {
+    android = true // Enable Android-specific linting rules
+    ignoreFailures = true // Fail the build if KtLint finds any issues
+    disabledRules = ["no-wildcard-imports"] // Specify any rules to ignore
+    reporters {
+        reporter("plain") // Output KtLint results in plain text format
+        reporter("html") // Output KtLint results in HTML format
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true // default Detekt configuration
+    
+    reports {
+        html.enabled = true  // HTML report
+        xml.enabled = true   // XML report
+        txt.enabled = false  // Disable plain text report
+    }
+    
+    // Optional: Enable Android-specific rules
+    android = true
+    ignoreFailures = true // Continue the build even if Detekt finds issues
+}
