@@ -37,7 +37,7 @@ jobs:
     env:
       SONAR_HOST_URL: "http://18.212.165.56:9000/"  # Your SonarQube server
       SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}  # Add in GitHub Secrets
-      SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}  # Add your EC2 SSH key in Secrets
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your EC2 SSH key in Secrets
     steps:
       - name: Run Sonar Scanner on EC2
         run: |
