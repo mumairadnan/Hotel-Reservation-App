@@ -28,6 +28,9 @@ jobs:
       - name: Run KtLint Check
         run: ./gradlew ktlintCheck
 
+      - name: Run Detekt
+        run: ./gradlew detekt
+
       # Step 4: Build the Android app
       - name: Build Android App
         run: ./gradlew assembleRelease
