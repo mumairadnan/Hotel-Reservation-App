@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        
       - name: Determine Versioning Components
         id: version
         run: |
@@ -28,11 +29,13 @@ jobs:
           COMMIT_HASH=$(git rev-parse --short HEAD)
           VERSION="${LATEST_TAG}.${PATCH_VERSION}.${BRANCH_NAME}.${COMMIT_HASH}"
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
-      - name: Install Bundler 1.17.2
+
+      - name: Install Bundler 1.17.2 and Fastlane
         run: |
-          export GEM_HOME=$HOME/.gem
-          export GEM_PATH=$HOME/.gem
-          export PATH=$GEM_HOME/bin:$PATH  # Add gem binary directory to the PATH
-          gem install bundler -v 1.17.2 --user-install
-          bundle install
-          bundle exec fastlane android staging
+          export GEM_HOME=$HOME/.gem  # Set GEM_HOME to ~/.gem
+          export GEM_PATH=$HOME/.gem  # Ensure GEM_PATH is set to the same directory
+          export PATH=$GEM_HOME/bin:$PATH  # Add $GEM_HOME/bin to PATH so that `bundle` and `fastlane` can be found
+          gem install bundler -v 1.17.2 --user-install  # Install bundler
+          gem install fastlane --user-install  # Install fastlane (if not already installed)
+          bundle install  # Install dependencies from Gemfile (if you have one)
+          bundle exec fastlane android staging  # Run Fastlane with the specified lane
