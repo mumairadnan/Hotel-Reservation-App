@@ -34,7 +34,7 @@ jobs:
         run: |
           export GEM_HOME=$HOME/.gem  # Set GEM_HOME to ~/.gem
           export GEM_PATH=$HOME/.gem  # Ensure GEM_PATH is set to the same directory
-          export PATH=$GEM_HOME/bin:$PATH  # Add $GEM_HOME/bin to PATH so that `bundle` and `fastlane` can be found
+          export PATH=$HOME/.gem/ruby/3.2.0/bin:$PATH  # Add Ruby gems bin to PATH
           
           # Install bundler and fastlane
           gem install bundler -v 1.17.2 --user-install  # Install bundler
@@ -48,3 +48,4 @@ jobs:
           
           # Run Fastlane with the specified lane
           bundle exec fastlane android staging
+
