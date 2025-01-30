@@ -1,0 +1,95 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+platform :android do
+  desc "Builds a production version of the app"
+  lane :production do
+    build(variant: "production")
+  end
+  desc "Builds a staging version of the app"
+  lane :staging do
+    build(variant: "staging")
+  end
+  private_lane :build do |options|
+    increment_version_code
+    version_name = get_current_build_version
+    android_set_version_name(version_name: version_name)
+    variant = options[:variant]
+    gradle(task: 'clean')
+    gradle(
+        task: 'generateSafeArgs',
+        build_type: 'Release',
+        flavor: variant
+    )
+    gradle(
+      task: 'assemble',
+      build_type: 'Release',
+      flavor: variant,
+      properties: {
+        "android.injected.signing.store.file" => File.expand_path("./",ENV['PWD']) + "/keystore/wellsitenavigator_keystore",
+        "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_STORE_PASSWORD'],
+        "android.injected.signing.key.alias" => ENV['ANDROID_KEYSTORE_ALIAS'],
+        "android.injected.signing.key.password" => ENV['ANDROID_KEYSTORE_KEY_PASSWORD']
+      }
+    )
+    export_build(name: "wellsite.apk")
+  end
+  private_lane :export_build do |options|
+    apk_location = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+    apk_new_name = options[:name]
+    sh "cd .. && mkdir -p releaseBuilds"
+    sh "mv #{apk_location} ../releaseBuilds/#{apk_new_name}"
+  end
+  desc "Get current tag"
+  lane :get_current_tag do
+    tags = sh('git tag --sort=-v:refname | head -n 1');
+    tags
+  end
+  desc "Get commit counts"
+  lane :get_commits_count do
+    current_tag = get_current_tag;
+    current_commit = last_git_commit[:abbreviated_commit_hash];
+    git_log = sh('git log --oneline '+current_tag.strip+'..'+current_commit.strip);
+    count = git_log.lines.count.to_s;
+    puts count;
+    count;
+  end
+  desc "Get generated build version"
+  lane :get_current_build_version do
+    total_commit = get_commits_count;
+    current_tag = get_current_tag.strip;
+    current_tag = ENV['VERSION'] # Directly use the version from GitHub Actions pipeline
+    puts current_tag;
+    current_tag;
+  end;
+  lane :beta do
+    staging
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      apk_path: "./releaseBuilds/wellsite.apk",
+      groups_file: "fastlane/groups.txt",
+      service_credentials_file: "fastlane/firebase-adminsdk-service-account.json"
+     )
+  end
+  lane :release do
+    production
+    upload_to_play_store(
+      apk: "./releaseBuilds/wellsite.apk",
+      rollout: ENV["GOOGLE_PLAY_STORE_ROLLOUT"],
+      track: ENV["GOOGLE_PLAY_STORE_TRACK"]
+    )
+  end
+end

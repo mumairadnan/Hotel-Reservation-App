@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.00059148">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: Switch to android get_commits_count lane" time="0.001498138">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: Switch to android get_current_tag lane" time="0.000178819">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: git tag --sort=-v:refname | head -n 1" time="0.007763784">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: last_git_commit" time="0.015024485">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: git log --oneline ..de4c35a" time="0.002486339">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: Switch to android get_current_tag lane" time="0.000390247">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="7: git tag --sort=-v:refname | head -n 1" time="0.003959669">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

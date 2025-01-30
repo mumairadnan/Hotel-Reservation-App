@@ -1,100 +1,38 @@
-name: Build Android App
-
+name: Build Android Staging App
 on:
   push:
     branches:
+      - quality-gates-integeration
+      - candidate
+      - release
       - main
-
 jobs:
   build:
-    name: Build Android App
+    name: Build Android Staging App
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java_version: [21.0.3]
-        sdk_version: [33]
-        ndk_version: ['23.1.7779620']
-
     steps:
-      # Step 1: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      # Step 2: Set up Git and fetch tags
-      - name: Set up Git
-        run: git fetch --tags
-
-      # Step 3: Run ktlint check
-      - name: Run KtLint Check
-        run: ./gradlew ktlintCheck
-
-      - name: Run Detekt
-        run: ./gradlew detekt
-
-      # Step 4: Build the Android app
-      - name: Build Android App
-        run: ./gradlew assembleRelease
-
-
-  #     - name: Set Up JDK 17 (Required for SonarQube)
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         distribution: 'temurin'
-  #         java-version: '17'
-
-  #     - name: Get Commit Details
-  #       id: commit_details
-  #       run: |
-  #         echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-  #         echo "AUTHOR_EMAIL=$(git log -1 --pretty=%ce)" >> $GITHUB_ENV
-  #       shell: bash
-
-  #     - name: Print Commit Details
-  #       run: |
-  #         echo "Commit Message: ${{ env.COMMIT_MESSAGE }}"
-  #         echo "Author Email: ${{ env.AUTHOR_EMAIL }}"
-
-  # run-sonar-scanner:
-  #   runs-on: ubuntu-latest
-  #   needs: build-and-analyze  # Ensure this runs after build-and-analyze
-  #   env:
-  #     SONAR_HOST_URL: "http://18.212.165.56:9000/"  # Your SonarQube server
-  #     SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}  # Add in GitHub Secrets
-  #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your EC2 SSH key in Secrets
-  #   steps:
-  #     - name: Run Sonar Scanner on EC2
-  #       run: |
-  #         echo "$SSH_PRIVATE_KEY" > /tmp/serverkey.pem
-  #         chmod 600 /tmp/serverkey.pem
-
-  #         ssh -o StrictHostKeyChecking=no -i /tmp/serverkey.pem ubuntu@18.212.165.56 << 'EOF'
-  #           wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.6.1.59531.zip
-  #           unzip -q sonarqube-9.6.1.59531.zip
-  #           sudo mv sonarqube-9.6.1.59531 /opt/sonarqube
-  #           export PATH=$PATH:/opt/sonar-scanner/bin
-            
-  #           sonar-scanner \
-  #             -Dsonar.projectKey=Hotel-Reservation-App \
-  #             -Dsonar.sources=. \
-  #             -Dsonar.host.url=$SONAR_HOST_URL \
-  #             -Dsonar.login=$SONAR_TOKEN \
-  #             -Dsonar.php.coverage.reportPaths=coverage.xml
-  #         EOF
-
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: run-sonar-scanner  # Ensure this runs after SonarQube analysis
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
-
-  #     - name: Deploy to Application Server
-  #       if: github.ref == 'refs/heads/main'
-  #       env:
-  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  #       run: |
-  #         echo "${SSH_PRIVATE_KEY}" > /tmp/serverkey.pem
-  #         chmod 600 /tmp/serverkey.pem
-  #         rsync --progress -r -e "ssh -v -o StrictHostKeyChecking=no -i /tmp/serverkey.pem" \
-  #         ./src/PHP_Files/* \
-  #         ubuntu@34.238.232.63:/var/www/html/backend/PHP_Files
+      - name: Determine Versioning Components
+        id: version
+        run: |
+          # Get the latest tag (sorted by version)
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Count commits since the latest tag
+          if [ "$LATEST_TAG" = "v0.0.0" ]; then
+            PATCH_VERSION=$(git rev-list --count HEAD)
+          else
+            PATCH_VERSION=$(git rev-list ${LATEST_TAG}..HEAD --count || echo 0)
+          fi
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///' | sed 's/[^a-zA-Z0-9]/-/g')
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          VERSION="${LATEST_TAG}.${PATCH_VERSION}.${BRANCH_NAME}.${COMMIT_HASH}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+      - name: Install Bundler 1.17.2
+        run: |
+          export GEM_HOME=$HOME/.gem
+          export GEM_PATH=$HOME/.gem
+          export PATH=$GEM_HOME/bin:$PATH  # Add gem binary directory to the PATH
+          gem install bundler -v 1.17.2 --user-install
+          bundle install
+          bundle exec fastlane android staging
