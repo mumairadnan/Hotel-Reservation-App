@@ -42,16 +42,15 @@ platform :android do
   end
 
   private_lane :update_version_name do
-    version_name = ENV['VERSION'] || get_current_build_version
-    config_file = "buildSrc/src/main/java/com/sitefinder/wellsitenavigatorusa/buildsrc/Config.kt"
-  
-    # Update versionName in Config.kt
-    new_version_name = "const val versionName = \"#{version_name}\""
-    sh "sed -i 's/const val versionName = \".*\"/#{new_version_name}/' #{config_file}"
+  version_name = ENV['VERSION'] || get_current_build_version
+  config_file = "buildSrc/src/main/java/com/sitefinder/wellsitenavigatorusa/buildsrc/Config.kt"
 
-  
-    puts "Updated versionName to #{version_name} in Config.kt"
-  end
+  # Ensure correct sed command for Linux & macOS
+  sh "sed -i 's/const val VERSION_NAME = \".*\"/const val VERSION_NAME = \"#{version_name}\"/' #{config_file}"
+
+  puts "✅ Updated VERSION_NAME to #{version_name} in Config.kt"
+end
+
 
   private_lane :export_build do |options|
     apk_location = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
