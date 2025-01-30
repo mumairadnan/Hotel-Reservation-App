@@ -41,7 +41,7 @@ platform :android do
     export_build(name: "wellsite.apk")
   end
 
-  private_lane :update_version_name do
+  lane :update_version_name do
   version_name = ENV['VERSION'] || get_current_build_version
   config_file = "buildSrc/src/main/java/com/sitefinder/wellsitenavigatorusa/buildsrc/Config.kt"
 
