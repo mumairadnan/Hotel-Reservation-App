@@ -43,10 +43,9 @@ platform :android do
 
   lane :update_version_name do
   version_name = ENV['VERSION'] || get_current_build_version
-  config_file = "buildSrc/src/main/java/com/sitefinder/wellsitenavigatorusa/buildsrc/Config.kt"
-
-  # Ensure correct sed command for Linux & macOS
+  config_file = File.expand_path("buildSrc/src/main/java/com/sitefinder/wellsitenavigatorusa/buildsrc/Config.kt")
   sh "sed -i 's/const val VERSION_NAME = \".*\"/const val VERSION_NAME = \"#{version_name}\"/' #{config_file}"
+
 
   puts "✅ Updated VERSION_NAME to #{version_name} in Config.kt"
 end
