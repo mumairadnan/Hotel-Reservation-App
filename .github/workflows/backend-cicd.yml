@@ -47,5 +47,6 @@ jobs:
           bundle install  
           
           # Run Fastlane with the specified lane
-          bundle exec fastlane get_commits_count
+          bundle exec fastlane update_version_name
+
 
