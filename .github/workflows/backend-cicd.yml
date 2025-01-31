@@ -5,7 +5,6 @@ on:
       - quality-gates-integeration
       - candidate
       - release
-      - main
 jobs:
   build:
     name: Build Android Staging App
@@ -13,40 +12,38 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        
+
       - name: Determine Versioning Components
         id: version
         run: |
-          # Get the latest tag (sorted by version)
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          # Count commits since the latest tag
-          if [ "$LATEST_TAG" = "v0.0.0" ]; then
+          # Fetch latest tag using semantic versioning format (v1.2 instead of v1.2.0)
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+$' | head -n 1 || echo "v0.0")
+
+          # Count commits since the latest tag (Patch number in SemVer)
+          if [ "$LATEST_TAG" = "v0.0" ]; then
             PATCH_VERSION=$(git rev-list --count HEAD)
           else
             PATCH_VERSION=$(git rev-list ${LATEST_TAG}..HEAD --count || echo 0)
           fi
-          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///' | sed 's/[^a-zA-Z0-9]/-/g')
+
+          # Get the current branch name
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
+
+          # Remove special characters from the branch name (replace with "-")
+          BRANCH_NAME_CLEANSED=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9]/-/g')
+
+          # Get the latest commit hash (short version)
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          VERSION="${LATEST_TAG}.${PATCH_VERSION}.${BRANCH_NAME}.${COMMIT_HASH}"
+
+          # Construct the version in the required format
+          VERSION="${LATEST_TAG}.${PATCH_VERSION}.${BRANCH_NAME_CLEANSED}.${COMMIT_HASH}"
+
+          # Export the environment variables for later steps
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          echo "PATCH_VERSION=${PATCH_VERSION}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${BRANCH_NAME_CLEANSED}" >> $GITHUB_ENV
+          echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_ENV
 
-      - name: Install Bundler and Fastlane
-        run: |
-          export GEM_HOME=$HOME/.gem  # Set GEM_HOME to ~/.gem
-          export GEM_PATH=$HOME/.gem  # Ensure GEM_PATH is set to the same directory
-          export PATH=$HOME/.gem/ruby/3.2.0/bin:$PATH  # Add Ruby gems bin to PATH
-          
-          # Install bundler and fastlane
-          gem install bundler -v 1.17.2 --user-install  # Install bundler
-          gem install fastlane --user-install  # Install fastlane
-          
-          # Check if bundler is installed correctly
-          echo "Bundler version: $(bundle -v)"
-
-          # Install dependencies from Gemfile (if you have one)
-          bundle install  
-          
-          # Run Fastlane with the specified lane
-          bundle exec fastlane update_version_name
-
-
+      - name: Display Generated Version
+        run: echo "Generated Version: $VERSION"
