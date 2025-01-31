@@ -28,7 +28,7 @@ jobs:
           BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
 
           # Remove special characters from the branch name (replace with "-")
-          BRANCH_NAME_CLEANSED=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9]/-/g')
+          BRANCH_NAME_CLEANSED=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g')
 
           # Get the latest commit hash (short version)
           COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -44,4 +44,6 @@ jobs:
           echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_ENV
 
       - name: Display Generated Version
-        run: echo "Generated Version: $VERSION"
+        run: echo "Generated Version:${{ env.VERSION }}"
+
+
