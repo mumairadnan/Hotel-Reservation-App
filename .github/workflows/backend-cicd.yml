@@ -2,9 +2,7 @@ name: Build Android Staging App
 on:
   push:
     branches:
-      - quality-gates-integeration
-      - candidate
-      - release
+      - main
 jobs:
   build:
     name: Build Android Staging App
