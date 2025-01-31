@@ -1,5 +1,5 @@
 <h1 align="center">Hotel Reservation Application</h1>
-Umair.
+Umair Adnan.
 
 ### Description
 A `Hotel Reservation System` named as `VBook`, coded in `Java and PHP`. Vendor and Customer are the `Two Users` of this project and are described below:
